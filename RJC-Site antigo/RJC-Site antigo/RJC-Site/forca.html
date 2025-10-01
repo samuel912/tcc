@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Forca</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #2e003e, #4b0055);
+      color: #fff;
+      overflow: hidden;
+    }
+
+    /* Corações animados no fundo */
+    .hearts {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: -1;
+    }
+
+    .hearts span {
+      position: absolute;
+      display: block;
+      color: #b300b3;
+      animation: float 10s linear infinite;
+      font-size: 20px;
+      opacity: 0.3;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(100vh) translateX(0);
+        opacity: 0.3;
+      }
+      100% {
+        transform: translateY(-10vh) translateX(20px);
+        opacity: 0;
+      }
+    }
+
+    header {
+      background-color: #2b0040;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .forca-panel {
+      background-color: #3d0058;
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 0 15px #5c007a;
+      width: 300px;
+      text-align: center;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+    }
+
+    button {
+      background-color: #5c007a;
+      color: white;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #7a008f;
+    }
+
+    #hiddenWord {
+      letter-spacing: 8px;
+      font-size: 1.5rem;
+    }
+
+    .letter-input {
+      width: 40px;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #hangmanDrawing {
+      font-family: monospace;
+      white-space: pre;
+      margin-top: 1rem;
+      color: #ffb6ff;
+    }
+  </style>
+</head>
+<body>
+  <!-- Fundo com corações -->
+  <div class="hearts">
+    <!-- Vários corações -->
+    <span style="left: 10%;">💜</span>
+    <span style="left: 25%; animation-delay: 1s; font-size: 24px;">💜</span>
+    <span style="left: 40%; animation-delay: 2s; font-size: 18px;">💜</span>
+    <span style="left: 60%; animation-delay: 0.5s; font-size: 22px;">💜</span>
+    <span style="left: 75%; animation-delay: 1.5s; font-size: 20px;">💜</span>
+    <span style="left: 90%; animation-delay: 3s; font-size: 26px;">💜</span>
+  </div>
+
+  <header>
+    <h1>Love U 💜</h1>
+  </header>
+  <main>
+    <div class="forca-panel" id="forcaPanel">
+      <h2>Forca</h2>
+      <div id="setupSection">
+        <p>Digite a palavra secreta:</p>
+        <input type="password" id="secretWordInput" aria-label="Palavra secreta" autocomplete="off">
+        <button onclick="startGame()">Começar Jogo</button>
+      </div>
+
+      <div id="gameSection" class="hidden">
+        <p id="hiddenWord">_ _ _ _</p>
+        <input type="text" maxlength="1" class="letter-input" id="letterInput" aria-label="Letra para adivinhar">
+        <button onclick="guessLetter()">Tentar</button>
+        <button onclick="resetGame()">Reiniciar Jogo</button>
+        <p id="statusMsg"></p>
+        <pre id="hangmanDrawing"></pre>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let secretWord = '';
+    let displayedWord = [];
+    let errors = 0;
+    const maxErrors = 6;
+    let usedWords = [];
+    let usedLetters = [];
+
+    const hangmanStages = [
+`  +---+
+  |   |
+      |
+      |
+      |
+      |
+=========`,
+`  +---+
+  |   |
+  O   |
+      |
+      |
+      |
+=========`,
+`  +---+
+  |   |
+  O   |
+  |   |
+      |
+      |
+=========`,
+`  +---+
+  |   |
+  O   |
+ /|   |
+      |
+      |
+=========`,
+`  +---+
+  |   |
+  O   |
+ /|\\  |
+      |
+      |
+=========`,
+`  +---+
+  |   |
+  O   |
+ /|\\  |
+ /    |
+      |
+=========`,
+`  +---+
+  |   |
+  O   |
+ /|\\  |
+ / \\  |
+      |
+=========`];
+
+    function startGame() {
+      const input = document.getElementById("secretWordInput").value.trim().toUpperCase();
+      if (!input || !/^[A-Z]+$/.test(input)) return alert("Digite uma palavra válida.");
+      if (usedWords.includes(input)) return alert("Esta palavra já foi usada!");
+
+      secretWord = input;
+      usedWords.push(input);
+      displayedWord = Array(secretWord.length).fill("_");
+      errors = 0;
+
+      document.getElementById("setupSection").classList.add("hidden");
+      document.getElementById("gameSection").classList.remove("hidden");
+      updateDisplay();
+      drawHangman();
+    }
+
+    function updateDisplay() {
+      document.getElementById("hiddenWord").textContent = displayedWord.join(" ");
+    }
+
+    function drawHangman() {
+      document.getElementById("hangmanDrawing").textContent = hangmanStages[errors];
+    }
+
+    function guessLetter() {
+      const input = document.getElementById("letterInput").value.toUpperCase();
+      document.getElementById("letterInput").value = "";
+      if (input.length !== 1 || !input.match(/[A-Z]/)) return;
+
+      if (usedLetters.includes(input)) {
+        document.getElementById("statusMsg").textContent = `Você já tentou a letra '${input}'!`;
+        return;
+      }
+
+      let found = false;
+      usedLetters.push(input);
+      for (let i = 0; i < secretWord.length; i++) {
+        if (secretWord[i] === input) {
+          displayedWord[i] = input;
+          found = true;
+        }
+      }
+
+      if (!found) {
+        errors++;
+        drawHangman();
+        document.getElementById("statusMsg").textContent = `Letra '${input}' não encontrada.`;
+        if (errors >= maxErrors) {
+          document.getElementById("statusMsg").textContent = `Você perdeu! A palavra era '${secretWord}'.`;
+          document.getElementById("letterInput").disabled = true;
+        }
+      } else {
+        updateDisplay();
+        if (!displayedWord.includes("_")) {
+          document.getElementById("statusMsg").textContent = "Parabéns! Você acertou a palavra!";
+        } else {
+          document.getElementById("statusMsg").textContent = `Boa! A letra '${input}' está na palavra.`;
+        }
+      }
+    }
+
+    function resetGame() {
+      document.getElementById("setupSection").classList.remove("hidden");
+      document.getElementById("gameSection").classList.add("hidden");
+      document.getElementById("secretWordInput").value = "";
+      document.getElementById("statusMsg").textContent = "";
+      document.getElementById("hangmanDrawing").textContent = "";
+      document.getElementById("letterInput").disabled = false;
+      usedLetters = [];
+    }
+  </script>
+</body>
+</html>
+ 

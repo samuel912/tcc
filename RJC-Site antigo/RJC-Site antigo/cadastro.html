@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <!-- Latest compiled and minified CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cadastro</title>
+  <style>
+    /* Importando a fonte Gotham */
+    @font-face {
+      font-family: 'Gotham';
+      src: url('Gotham.woff2') format('woff2'),
+           url('Gotham.woff') format('woff'),
+           url('Gotham.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    body {
+      font-family: 'Gotham', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #8d8d8d;
+    }
+
+    .container {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      margin-bottom: 5px;
+      font-weight: normal;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+
+    button {
+      background-color: rgb(255, 175, 188);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      border: none;
+    }
+
+    button:hover {
+      background-color: rgb(245, 140, 155);
+    }
+
+    a {
+      text-decoration: none;
+      color: rgb(255, 175, 188);
+      font-weight: bold;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .login-link {
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Cadastro</h2>
+    <form id="cadastroForm" action="verificacao.php" method="POST">
+      <label for="nome">Nome:</label>
+      <input type="text" id="nome" name="nome" required />
+
+      <label for="email">E-mail:</label>
+      <input type="email" id="email" name="email" required />
+
+      <label for="senha">Senha:</label>
+      <input type="password" id="senha" name="senha" required />
+
+      <label for="confirmar_senha">Confirmar Senha:</label>
+      <input type="password" id="confirmar_senha" name="confirmar_senha" required />
+
+      <button type="submit">Cadastrar</button>
+    </form>
+    <p class="login-link">Já tem uma conta? <a href="login.html">Entre</a></p>
+  </div>
+
+  <script>
+    const form = document.getElementById('cadastroForm');
+    const senha = document.getElementById('senha');
+    const confirmarSenha = document.getElementById('confirmar_senha');
+    form.addEventListener('submit', function(event) {  // verifica as senhas
+      if (senha.value !== confirmarSenha.value) {
+        alert('As senhas não coincidem.');
+        event.preventDefault();
+      }
+    });
+  </script>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</html>
